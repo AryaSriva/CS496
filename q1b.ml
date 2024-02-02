@@ -55,39 +55,37 @@ let rec outgoing_nodes t (n:int) =
 
 *)   
 let rec nodes t =
-  let rec nodesHelper t = 
-    match t with
-    | [] -> []
-    | (x,y)::t -> [x] @ [y] @ nodesHelper t
-  in let tree = nodesHelper t 
-  match tree with
+  match t with
   | [] -> []
-  | x::tree when List.mem x tree = false -> [x] @ nodes tree
-  | _::tree -> nodes tree
+  | (src, tgt)::tl ->
+    let r = nodes tl
+    in 
+    (match List.mem src t r, List.mem tgt r with
+    | true, true -> r 
+    | true, false -> tgt::r 
+    | false, true -> src::r 
+    | _,_ -> src::tgt::r)
   
     
 (** [leaves t] returns the leaves of the tree [t]
    Eg. leaves ex =>  [4; 33; 77]
 *)
 let rec leaves t =
-  let rec leavesHelper t = 
-    match t with 
-    | [] -> []
-    | (x, y)::t -> [y] @ leavesHelper t
-  in List.filter() *)
-(* 
-   Returns the root of a tree
-   Eg. root ex =>  [12]
+  List.filter (fun n -> outgoing_nodes t n = []) (nodes t)
+
+   (* Returns the root of a tree
+   Eg. root ex =>  [12] *)
 
 let rec root t =
-  failwith "complete"
+  let og = List.flatten @@ List.map (fun n -> outgoing_nodes t n) (nodes t)
+  in List.filter (fun n -> not (List.mem n og)) (nodes t)
 
 (* 
    Returns the boolean indicating if the tree is a binary tree.
-   Eg. is_binary ex =>  true
-*)
+   Eg. is_binary ex =>  true *)
+
 let rec is_binary t =
-  failwith "complete"
+  List.for_all (fun l -> List.length l < 3) @@ List.map (outgoing_nodes t) (nodes t)
 
 (** [subtree t n] returns the subtree rooted at node [n]. (extra-credit)
  **  Eg. subtree ex 12 => [(43, 33); (43, 77); (7, 4); (12, 7); (12, 43)]
@@ -96,7 +94,13 @@ let rec is_binary t =
          subtree ex 4 => []
 *)
 let rec subtree t (n:int) =
-  failwith "complete"
+  let rec helper current visited
+    match current with 
+    | [] -> visited
+    | h::tl ->
+      let og = outgoing_nodes t h 
+      in helper (tl @ og) ((List.map (fun l -> (h,n)) og ) @ visited)
+in helper [n] []
 
                                
 
